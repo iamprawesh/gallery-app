@@ -1,121 +1,70 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
-import 'package:galleryapp/model/image_model.dart';
-import 'package:galleryapp/utils/constants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:galleryapp/model/image_model.dart';
+import 'package:galleryapp/utils/app_colors.dart';
 
-class FavouritePage extends StatefulWidget {
-  const FavouritePage({Key? key}) : super(key: key);
+import '../controller/search_page.controller.dart';
+import '../widget/image_widget.dart';
+
+class FavouritePage extends ConsumerStatefulWidget {
+  const FavouritePage({super.key});
 
   @override
-  _FavouritePageState createState() => _FavouritePageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _FavouritePageState();
 }
 
-class _FavouritePageState extends State<FavouritePage> {
-  int page = 1;
-  List<ImageModel> _DataList = [];
-  late Future<List<ImageModel>> _future;
-  ScrollController _controller = ScrollController();
-
-  Future<List<ImageModel>> getData(int pageCount) async {
-    final dio = Dio();
-
-    String url = Uri.encodeFull("$apiUrl");
-    var response = await dio
-        .get(
-          url,
-        )
-        .timeout(const Duration(seconds: 10));
-    ImageResponse payload = ImageResponse.fromJson(response.data);
-    _DataList.insertAll(0, payload.hits);
-
-    page++;
-    return _DataList;
-  }
-
+class _FavouritePageState extends ConsumerState<FavouritePage> {
   @override
   void initState() {
-    _future = getData(page);
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {});
     super.initState();
-    _controller.addListener(() {
-      if (_controller.position.pixels == _controller.position.maxScrollExtent) {
-        setState(() {
-          _future = getData(page);
-        });
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final searchController = ref.watch(searchNotifier);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Gallery App"),
+        title: const Text("Gallery App"),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _controller,
-              child: FutureBuilder(
-                  future: _future,
-                  builder: (BuildContext ctx,
-                      AsyncSnapshot<List<ImageModel>> snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return Center(
-                        child: SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator()),
-                      );
-                    }
-
-                    if (snapshot.hasError) {
-                      return Center(child: Text("Error"));
-                    }
-                    if (!snapshot.hasData) {
-                      return Center(child: Text("Error"));
-                    }
-
-                    var dataToShow = snapshot.data;
-                    return MasonryGridView.custom(
-                      shrinkWrap: true,
-                      physics: const ScrollPhysics(),
-                      mainAxisSpacing: 2,
-                      crossAxisSpacing: 2,
-                      gridDelegate:
-                          const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                      ),
-                      childrenDelegate: SliverChildBuilderDelegate(
-                          childCount: dataToShow!.length, (context, index) {
-                        ImageModel currentItem = dataToShow[index];
-                        // var imgAttachment =
-                        // findImageThumnail(currentItem, ref);
-
-                        return GestureDetector(
-                          onTap: () {},
-                          child: CachedNetworkImage(
-                            imageUrl: "${currentItem.largeImageURL}",
-                            progressIndicatorBuilder:
-                                (context, url, downloadProgress) => Container(
-                              height: 20,
-                              width: 20,
-                            ),
-                            errorWidget: (context, url, error) =>
-                                Icon(Icons.error),
-                          ),
-                        );
-                      }),
-                    );
-                  }),
+      body: Builder(builder: (context) {
+        if (searchController.favourite.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                "No Item Has been added to Favourite",
+                style: TextStyle(
+                  fontSize: 20,
+                  color: AppColors.lightGrey,
+                ),
+              ),
             ),
-          )
-        ],
-      ),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: MasonryGridView.custom(
+            shrinkWrap: true,
+            physics: const ScrollPhysics(),
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+            ),
+            childrenDelegate: SliverChildBuilderDelegate(
+              childCount: searchController.favourite.length,
+              (context, index) {
+                ImageModel currentItem = searchController.favourite[index];
+
+                return ImageWidget(currentItem: currentItem);
+              },
+            ),
+          ),
+        );
+      }),
     );
   }
 }

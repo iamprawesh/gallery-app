@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:galleryapp/screens/favourite_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:galleryapp/screens/search_page.dart';
 
-class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+import '../controller/search_page.controller.dart';
+import '../utils/app_colors.dart';
+import 'favourite_page.dart';
+
+class MainPage extends ConsumerStatefulWidget {
+  const MainPage({super.key});
 
   @override
-  _MainPageState createState() => _MainPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends ConsumerState<MainPage> {
   int _selectedIndex = 0; //New
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(searchNotifier).fetchData(isRefresh: true);
+    });
+    super.initState();
+  }
 
 //New
   void _onItemTapped(int index) {
@@ -29,9 +41,9 @@ class _MainPageState extends State<MainPage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) => _onItemTapped(index),
-        selectedItemColor: Colors.red,
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: Colors.grey,
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(
               icon: Icon(Icons.favorite), label: "Favourite"),

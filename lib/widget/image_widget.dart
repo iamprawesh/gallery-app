@@ -149,7 +149,7 @@ class _ImageWidgetState extends ConsumerState<ImageWidget> {
 
 Padding keyValue(icon, title) {
   return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 5),
+    padding: const EdgeInsets.symmetric(vertical: 3),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -36,7 +36,7 @@ class SearchController extends ChangeNotifier {
       notifyListeners();
       final dio = Dio();
       var url_ = apiUrl;
-      url_ += "&q=$query&per_page=10&page=$currentPage";
+      url_ += "&q=$query&per_page=20&page=$currentPage";
       String url = Uri.encodeFull(url_);
 
       var response = await dio.get(url).timeout(const Duration(seconds: 10));

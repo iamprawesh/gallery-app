@@ -1,6 +1,8 @@
 # galleryapp
 
-A new Flutter project.
+A new Flutter project :GALLERY APP made from pixabay API.
+
+## To See the screenshot of the project go to assets\appimages
 
 ## Getting Started
 
